@@ -1,4 +1,4 @@
-package goof
+package upto
 
 import "testing"
 
