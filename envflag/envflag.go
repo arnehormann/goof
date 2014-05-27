@@ -163,24 +163,24 @@ func (e Env) WithParameters(name string) Parameters {
 //
 // ARG and ENV can only contain English letters, digits and a separator (ENV: '_', ARG: '-').
 // All other characters in the key are replaced with separators.
-// Upper case letters are lower cased and prefixed with a separator.
+// Upper case letters are downcased and prefixed with a separator.
 // ENV is prefixed with the Environment prefix.
-// Multiple separators are reduced to one.
+// Multiple adjacent separators are reduced to one.
 // Leading separators are removed, ARG may be used prefixed with one or two separators.
-// Then, ENV is upper cased, ARG is lower cased.
+// ENV is upcased.
 //
-// Examples for Environment prefix "myapp-":
+// Examples for Environment prefix "myapp":
 //     Key      ARG        ENV
 //     -------|----------|--------------
-//     MyKey	my-key     MYAPP_MY_KEY
+//     MyKey    my-key     MYAPP_MY_KEY
 //     Val      val        MYAPP_VAL
-//     Über     ber        MYAPP_BER
+//     Über     ber        MYAPPBER
 //
 // Usage:
-//     # ARG with single leading dash
+//     # -ARG
 //     myapp -my-key=Value
 //
-//     # ARG with double leading dash
+//     # --ARG
 //     myapp --my-key=Value2
 //
 //     # ENV
@@ -368,7 +368,7 @@ func (ps *parameters) EnvKey(key string) string {
 	return ps.keyToEnv(key)
 }
 
-func (ps *parameters) SetDefaults(env func(string) string) error {
+func (ps *parameters) SetValues(env func(string) string) error {
 	errs := &errors{}
 	for k, v := range ps.values {
 		val := env(ps.keyToEnv(k))
