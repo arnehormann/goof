@@ -78,16 +78,16 @@ type ParameterValue struct {
 // Struct tags can be used to configure the behavior of parameters,
 // all tags are optional.
 //
-//     type Config struct {
-//	       a string `key:"override the key, otherwise it is the field name"`
-//	       b string `args:"comma separated alternative command line arg representations"`
-//	       c string `desc:"a description of what the parameter does"`
-//	       d string `tag:"a tag useable for filtering, e.g. when generating documentation"`
-//     }
+//	    type Config struct {
+//		       a string `key:"override the key, otherwise it is the field name"`
+//		       b string `args:"comma separated alternative command line arg representations"`
+//		       c string `desc:"a description of what the parameter does"`
+//		       d string `tag:"a tag useable for filtering, e.g. when generating documentation"`
+//	    }
 //
 // In addition to the tag based configuration, the field name and type are used and
 // the current value on registration is used as the default value.
-type Vars interface{}
+type Vars any
 
 // Value is the interface to the dynamic value stored in a flag. (The default value is represented as a string.)
 type Value interface {
@@ -170,22 +170,24 @@ func (e Env) WithParameters(name string) Parameters {
 // ENV is upcased.
 //
 // Examples for Environment prefix "myapp":
-//     Key      ARG        ENV
-//     -------|----------|--------------
-//     MyKey    my-key     MYAPP_MY_KEY
-//     Val      val        MYAPP_VAL
-//     Über     ber        MYAPPBER
+//
+//	Key      ARG        ENV
+//	-------|----------|--------------
+//	MyKey    my-key     MYAPP_MY_KEY
+//	Val      val        MYAPP_VAL
+//	Über     ber        MYAPPBER
 //
 // Usage:
-//     # -ARG
-//     myapp -my-key=Value
 //
-//     # --ARG
-//     myapp --my-key=Value2
+//	# -ARG
+//	myapp -my-key=Value
 //
-//     # ENV
-//     export MYAPP_VAL=value
-//     myapp
+//	# --ARG
+//	myapp --my-key=Value2
+//
+//	# ENV
+//	export MYAPP_VAL=value
+//	myapp
 type Parameters interface {
 
 	// Register registers struct fields as configuration parameters.
@@ -240,8 +242,8 @@ type parameters struct {
 }
 
 type reference struct {
-	base    interface{}
-	ptr     interface{}
+	base    any
+	ptr     any
 	name    string
 	arg     string
 	tag     string
