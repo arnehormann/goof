@@ -11,8 +11,7 @@ import (
 )
 
 type MemFS interface {
-	// TODO
-	// fs.GlobFS
+	fs.GlobFS
 	fs.ReadDirFS
 	fs.ReadFileFS
 	fs.StatFS
@@ -232,7 +231,7 @@ func (m *memFS) dirEntries(entries []fs.DirEntry, dc dirCursor, n int) ([]fs.Dir
 	}
 	ne := len(entries)
 	rp := m.rootpath
-	// TODO think of this in terms of walk
+	// TODO use walk (maybe)
 	for ; dc.idx < len(m.files); dc.idx++ {
 		if n > 0 && len(entries) == ne+n {
 			break

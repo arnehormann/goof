@@ -9,9 +9,10 @@ import (
 const pathSeparator = '/'
 
 var (
-	errClosed      = errors.New("file already closed")
-	errStatClosed  = errors.New("use of closed file")
-	errChangedRoot = errors.New("subfs changed root directory")
+	errClosed         = errors.New("file already closed")
+	errStatClosed     = errors.New("use of closed file")
+	errChangedRoot    = errors.New("subfs changed root directory")
+	errNegativeOffset = errors.New("negative offset")
 )
 
 // nextSegment returns the next part of path up to and including a "/".

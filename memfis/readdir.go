@@ -16,8 +16,19 @@ type memReadableDir struct {
 
 var _ fs.ReadDirFile = (*memReadableDir)(nil)
 
-func (d *memReadableDir) closed() bool {
+func (d *memReadableDir) isClosed() bool {
 	return d.dc.idx < 0
+}
+
+func (d *memReadableDir) Close() error {
+	// no spec for error; valid variant determined by cmd/fstester:
+	// return nil on first call, then PathError
+	if d.isClosed() {
+		return memPathError("close", d.cwd(), errClosed)
+	}
+	// make closed
+	d.dc.idx = -1
+	return nil
 }
 
 // cwd retrieves the current working directory
@@ -31,16 +42,15 @@ func (d *memReadableDir) cwd() string {
 }
 
 func (d *memReadableDir) Stat() (fs.FileInfo, error) {
-	if d.closed() {
+	if d.isClosed() {
 		return nil, memPathError("stat", d.cwd(), errStatClosed)
 	}
 	return makeRootDir(d.fs.rootpath), nil
 }
 
 func (d *memReadableDir) Read(r []byte) (int, error) {
-	// SPEC unclear: expected error for directories?
-	// determined by cmd/fstester: the PathError below is a valid value
-	if d.closed() {
+	// no spec for error; determined by cmd/fstester: the PathError below is a valid value
+	if d.isClosed() {
 		return 0, memPathError("read", d.cwd(), errClosed)
 	}
 	return 0, memPathError("read", d.cwd(), syscall.EISDIR)
@@ -53,8 +63,7 @@ func (d *memReadableDir) ResetReadDir() {
 
 // Seek will reset non-closed directories for ReadDir.
 func (d *memReadableDir) Seek(offset int64, whence int) (int64, error) {
-	if d.closed() {
-		// TODO validate this is okay behavior
+	if d.isClosed() {
 		return 0, memPathError("seek", d.cwd(), errClosed)
 	}
 	// observed behavior on os.File: Seek on directory resets ReadDir and returns 0, nil
@@ -62,20 +71,8 @@ func (d *memReadableDir) Seek(offset int64, whence int) (int64, error) {
 	return 0, nil
 }
 
-func (d *memReadableDir) Close() error {
-	// SPEC unclear: expected error for directories?
-	// valid variant determined by cmd/fstester:
-	// return nil on first call, then PathError
-	if d.closed() {
-		return memPathError("close", d.cwd(), errClosed)
-	}
-	// make closed
-	d.dc.idx = -1
-	return nil
-}
-
 func (d *memReadableDir) ReadDir(n int) ([]fs.DirEntry, error) {
-	if d.closed() {
+	if d.isClosed() {
 		return nil, memPathError("readdir", d.cwd(), errClosed)
 	}
 	de, dc, err := d.fs.dirEntries(nil, d.dc, n)

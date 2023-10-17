@@ -60,7 +60,6 @@ func testFS(t *testing.T, nameContentPairs ...string) {
 }
 
 func TestMemFS(t *testing.T) {
-	// TODO test same-named path elements occuring as dir and file or multiple times
 	testFS(t,
 		"a/a", "Hello",
 		"a/b/c", "",

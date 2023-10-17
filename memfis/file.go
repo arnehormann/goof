@@ -1,7 +1,6 @@
 package memfis
 
 import (
-	"errors"
 	"io"
 	"io/fs"
 	"strings"
@@ -29,8 +28,6 @@ type FileSizer interface {
 	// Size retrieves the file size in bytes; it must match len(GetContent())
 	Size() int64
 }
-
-var errNegativeOffset = errors.New("negative offset")
 
 // fileSize retrieves the size of a file using Size() for FileSizer.
 func fileSize(f File) int64 {
@@ -127,6 +124,9 @@ func (f *memFile) Close() error {
 }
 
 func (f *memFile) Stat() (fs.FileInfo, error) {
+	if f.isClosed() {
+		return nil, fsPathError("stat", f.Name(), fs.ErrClosed)
+	}
 	return f, nil
 }
 
@@ -167,10 +167,10 @@ func (f *memFile) WriteTo(w io.Writer) (n int64, err error) {
 	if f.isClosed() {
 		return 0, fsPathError("read", f.Name(), fs.ErrClosed)
 	}
-	i, err := w.Write([]byte(f.GetContent()))
+	i, err := io.WriteString(w, f.GetContent())
 	f.ridx += i
 	if err != nil {
-		return int64(i), fsPathError("reed", f.Name(), err)
+		return int64(i), fsPathError("read", f.Name(), err)
 	}
 	return int64(i), nil
 }
